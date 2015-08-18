@@ -108,7 +108,7 @@ static SGPath pathForKnownFolder(REFKNOWNFOLDERID folderId, const SGPath& def)
                 SGPath folder_path = SGPath(path, def.getPermissionChecker());
 
                 // release dynamic memory
-                CoTaskMemFree(static_cast<void*>(localFolder));
+                //CoTaskMemFree(static_cast<void*>(localFolder));
 
                 return folder_path;
             }
@@ -747,30 +747,18 @@ SGPath SGPath::standardLocation(StandardLocation type, const SGPath& def)
 
 #ifdef _WIN32
     case DESKTOP:
-        if (IsWindowsVistaOrGreater())
-            return pathForKnownFolder(FOLDERID_Desktop, def);
-
         return pathForCSIDL(CSIDL_DESKTOPDIRECTORY, def);
 
     case DOWNLOADS:
-        if (IsWindowsVistaOrGreater())
-            return pathForKnownFolder(FOLDERID_Downloads, def);
-
         if (!def.isNull())
             return def;
 
         return pathForCSIDL(CSIDL_DESKTOPDIRECTORY, def);
 
     case DOCUMENTS:
-        if (IsWindowsVistaOrGreater())
-            return pathForKnownFolder(FOLDERID_Documents, def);
-
         return pathForCSIDL(CSIDL_MYDOCUMENTS, def);
 
     case PICTURES:
-        if (IsWindowsVistaOrGreater())
-            return pathForKnownFolder(FOLDERID_Pictures, def);
-
         return pathForCSIDL(CSIDL_MYPICTURES, def);
 
 #elif __APPLE__
