@@ -34,6 +34,7 @@
 
 #ifdef _WIN32
 #  include <direct.h>
+#define KF_FLAG_DEFAULT_PATH 0x00000400
 #endif
 #include "sg_path.hxx"
 
@@ -99,7 +100,7 @@ static SGPath pathForKnownFolder(REFKNOWNFOLDERID folderId, const SGPath& def)
                 // copy into local memory
                 char path[MAX_PATH];
                 size_t len;
-                if (wcstombs_s(&len, path, localFolder, MAX_PATH) != S_OK) {
+                if (wcstombs_s(&len, path, wcslen(localFolder), localFolder, MAX_PATH) != S_OK) {
                     path[0] = '\0';
                     SG_LOG(SG_GENERAL, SG_WARN, "WCS to MBS failed");
                 }
@@ -338,7 +339,7 @@ string SGPath::file() const
         return path;
     }
 }
-  
+
 
 // get the directory part of the path.
 string SGPath::dir() const {
@@ -355,12 +356,12 @@ string SGPath::base() const
 {
     string::size_type index = path.rfind(".");
     string::size_type lastSep = path.rfind(sgDirPathSep);
-    
+
 // tolerate dots inside directory names
     if ((lastSep != string::npos) && (index < lastSep)) {
         return path;
     }
-    
+
     if (index != string::npos) {
         return path.substr(0, index);
     } else {
@@ -376,12 +377,12 @@ string SGPath::file_base() const
     } else {
         ++index; // skip past the separator
     }
-    
+
     string::size_type firstDot = path.find(".", index);
     if (firstDot == string::npos) {
         return path.substr(index); // no extensions
     }
-    
+
     return path.substr(index, firstDot - index);
 }
 
@@ -409,7 +410,7 @@ string SGPath::complete_lower_extension() const
     } else {
         ++index; // skip past the separator
     }
-    
+
     string::size_type firstDot = path.find(".", index);
     if ((firstDot != string::npos)  && (path.find(sgDirPathSep, firstDot) == string::npos)) {
         return boost::to_lower_copy(path.substr(firstDot + 1));
@@ -437,7 +438,7 @@ void SGPath::validate() const
   if ((path.length() > 1) && (path.back() == '/')) {
 	  statPath.pop_back();
   }
-      
+
   if (_stat(statPath.c_str(), &buf ) < 0) {
     _exists = false;
   } else {
@@ -458,7 +459,7 @@ void SGPath::validate() const
     _isDir = ((S_ISDIR(buf.st_mode )) != 0);
     _modTime = buf.st_mtime;
   }
-  
+
 #endif
   _cached = true;
 }
@@ -622,7 +623,7 @@ bool SGPath::isAbsolute() const
   if (path.empty()) {
     return false;
   }
-  
+
 #ifdef _WIN32
   // detect '[A-Za-z]:/'
   if (path.size() > 2) {
@@ -631,7 +632,7 @@ bool SGPath::isAbsolute() const
     }
   }
 #endif
-  
+
   return (path[0] == sgDirPathSep);
 }
 
@@ -836,7 +837,7 @@ SGPath SGPath::documents(const SGPath& def)
 std::string SGPath::realpath() const
 {
 #if (defined(__APPLE__) && MAC_OS_X_VERSION_MAX_ALLOWED <= 1050)
-    // Workaround for Mac OS 10.5. Somehow fgfs crashes on Mac at ::realpath. 
+    // Workaround for Mac OS 10.5. Somehow fgfs crashes on Mac at ::realpath.
     // This means relative paths cannot be used on Mac OS <= 10.5
     return path;
 #else
